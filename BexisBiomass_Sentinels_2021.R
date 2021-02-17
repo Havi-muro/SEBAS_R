@@ -59,6 +59,8 @@ Bexis6 <- data.frame(
 # DOY_releves   = Bexis5$DOY_releves,
 # DOY_biomass   = Bexis5$DOY_bm,
 # editor        = factor(Bexis5$editor),
+ x             = Bexis5$x,
+ y             = Bexis5$y, 
  height        = as.numeric(Bexis5$vegetation_height_mean_cm),
  vascular      = as.numeric(Bexis5$number_vascular_plants),
  vasc_cum      = as.numeric(Bexis5$cover_cumulative_all_vascular_plants),

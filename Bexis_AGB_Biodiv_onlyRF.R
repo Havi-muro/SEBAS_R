@@ -42,7 +42,7 @@ str(Bexis_clean)
 #Take the response variable and the predictors
 #Choose all, or per site Bexis7Hai, Bexis7Alb, Bexis7Sch
 
-ForRF <- Bexis7[c("biomass"
+ForRF <- Bexis_clean[c("biomass"
                   ,'explo'
                   ,'year'
                   ,'Slope'
@@ -73,7 +73,7 @@ validation <- validation[ , !(names(validation) %in% 'year')]
           ############        OR        #################
 
 # Assign the data to training and validation 2 sites training, 1 sites validation
-training <- subset(ForRF, explo == 'SCH')
+training <- subset(ForRF, explo != 'ALB')
 training <- training[ , !(names(training) %in% 'explo')]
 
 validation <- subset(ForRF, explo == 'ALB')
