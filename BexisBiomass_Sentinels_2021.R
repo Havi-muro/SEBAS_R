@@ -143,7 +143,7 @@ identify(x=Bexis7$LAI)
 str(Bexis7)
 
 #Export for DL comparison
-#write.csv(Bexis7, "AGB_PFT_Biodiv_NPK_S2S1_2017-2020_SoilTypes_4_4DLfromRF.csv")
+write.csv(Bexis7, "AGB_Biodiv_bexis_forRF.csv")
 
 #Post-hoc testing, to see if there are observer, year or location effect.
 p <- ggplot(data = Bexis7,
