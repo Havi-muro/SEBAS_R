@@ -27,7 +27,7 @@ library(caTools)
 
 setwd('C:/Users/Janny/Desktop/SEBAS/Bexis/Bexis_BiomDiversity_Model')
 dir()
-BexisRaw <- read_excel("AGB_PFT_Biodiv_NPK_S2S1_2017-2020_SoilTypes_4.xlsx", sheet = 'Sheet1')
+BexisRaw <- read_excel("C:/Users/Janny/Desktop/SEBAS/Bexis/Bexis_BiomDiversity_Model/AGB_PFT_Biodiv_NPK_S2S1_2017-2020_SoilTypes_4.xlsx", sheet = 'Sheet1')
 #View(SE)
 str(BexisRaw)
 
@@ -53,7 +53,7 @@ Bexis5 <- cbind(Bexis4, LUIgroup)
 
 #Change names and write year and editor as factor
 Bexis6 <- data.frame(
- PlotID        = Bexis5$Useful_EP_PlotID,
+ ep        = Bexis5$ep,
  explo         = factor(Bexis5$explo),
  year          = factor(Bexis5$Year),
 # DOY_releves   = Bexis5$DOY_releves,
