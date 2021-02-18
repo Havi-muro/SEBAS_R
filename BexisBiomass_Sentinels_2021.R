@@ -145,7 +145,7 @@ identify(x=Bexis7$LAI)
 str(Bexis7)
 
 #Export for DL comparison
-write.csv(Bexis7, "AGB_Biodiv_bexis_forRF.csv")
+#write.csv(Bexis7, "AGB_Biodiv_bexis_forRF.csv")
 
 #Post-hoc testing, to see if there are observer, year or location effect.
 p <- ggplot(data = Bexis7,
@@ -207,17 +207,19 @@ Bexis7AlbHai<- subset(Bexis7, explo != "SCH")
 #Choose all, or per site Bexis7Hai, Bexis7Alb, Bexis7Sch
 
 ForRF <- Bexis7[c("biomass"
+                #  ,'x'
+                #  ,'y'
                   ,'explo'
-                  ,'year'
+                #  ,'year'
                   ,'Slope'
-                  ,'Aspect'
+                #  ,'Aspect'
                   ,'Soil'
-                  ,'LUIgroup'
+                #  ,'LUIgroup'
                   ,'LAI', 'NDVI', 'NDII'
                   ,'VVStd', 'VHStd'
-                  #,'VHMedian_May','VVMedian_May',
-                  ,'Phase'
-                  ,'Amp'
+                #  ,'VHMedian_May','VVMedian_May',
+                #  ,'Phase'
+                #  ,'Amp'
 )]
 
 # Set random seed to make results reproducible:
@@ -242,6 +244,19 @@ training <- training[ , !(names(training) %in% 'explo')]
 
 validation <- subset(ForRF, explo == 'ALB')
 validation <- validation[ , !(names(validation) %in% 'explo')]
+
+           ############        OR        #################
+
+set.seed(21)
+
+# Generate a random sample of "data_set_size" indexes
+data_set_size <- floor(nrow(ForRF)/4)
+indexes <- sample(1:nrow(ForRF), size = data_set_size)
+
+# Assign the data to training and validation
+training <- ForRF[-indexes,]
+validation <- ForRF[indexes,]
+
 
 dim(training)
 dim(validation)

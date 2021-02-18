@@ -43,17 +43,20 @@ str(Bexis_clean)
 #Choose all, or per site Bexis7Hai, Bexis7Alb, Bexis7Sch
 
 ForRF <- Bexis_clean[c("biomass"
+                #  ,'x'
+                #  ,'y'
                   ,'explo'
-                  ,'year'
-                  ,'Slope'
-                  ,'Aspect'
+                #  ,'year'
+                #  ,'Slope'
+                #  ,'Aspect'
                   ,'Soil'
-                  ,'LUIgroup'
+                #  ,'LUIgroup'
                   ,'LAI', 'NDVI', 'NDII'
-                  ,'VVStd', 'VHStd'
-                  #,'VHMedian_May','VVMedian_May',
-                  ,'Phase'
-                  ,'Amp'
+                #  ,'VVStd'
+                #  ,'VHStd'
+                # ,'VHMedian_May','VVMedian_May'
+                #  ,'Phase'
+                #  ,'Amp'
 )]
 
 # Set random seed to make results reproducible:
@@ -73,10 +76,10 @@ validation <- validation[ , !(names(validation) %in% 'year')]
           ############        OR        #################
 
 # Assign the data to training and validation 2 sites training, 1 sites validation
-training <- subset(ForRF, explo != 'ALB')
+training <- subset(ForRF, explo == 'ALB')
 training <- training[ , !(names(training) %in% 'explo')]
 
-validation <- subset(ForRF, explo == 'ALB')
+validation <- subset(ForRF, explo == 'HAI')
 validation <- validation[ , !(names(validation) %in% 'explo')]
 
 dim(training)
@@ -99,7 +102,7 @@ plot(x= pred, y = validation$biomass, main = "Biomass Predicted vs Validated for
 RMSE <- sqrt(sum((pred - validation$biomass)^2)/length(pred))
 RMSE
 #divide it by the mean of our outcome variable so we can interpret RMSE in terms of percentage of the mean:
-print(RMSE/mean(validation1$biomass)) 
+print(RMSE/mean(validation$biomass)) 
 
 #identify(x= pred, y = validation1$biomass)
 # weirdvalues<-Bexis7[c(49,  72, 114),]
@@ -129,7 +132,7 @@ training <- training[ , !(names(training) %in% 'year')]
 validation <- subset(ForRF, year == '2020')
 validation <- validation[ , !(names(validation) %in% 'year')]
 
-          ##############    OR    ##############
+          ##############    OR    ###############
 
 # Assign the data to training and validation 2 sites training, 1 sites validation
 training <- subset(ForRF, explo != 'SCH')
