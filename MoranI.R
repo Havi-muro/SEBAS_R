@@ -50,6 +50,7 @@ colSums(is.na(Bexis6))
 
 # Remove missing values:
 Bexis7 <- subset(Bexis6, biomass != "NA")
+Bexis7 <- subset(Bexis6, Rich != "NA")
 Bexis7 <- subset(Bexis7, LAI != 'NA')
 
 #Select single year
@@ -72,7 +73,7 @@ Moran.I(BexisAGB$biomass, AGB.dist.inv)
 
 # Generate variogram
 # measure of the degree of similarity between pairs of points separated by a specific distance
-BexisAGB.gls <- gls(LAI ~ biomass, BexisAGB, method='REML')
+BexisAGB.gls <- gls(biomass ~ LAI, BexisAGB, method='REML')
 plot(BexisAGB.gls) #no obvious signs of issues with normality or homogeneity of variance. 
 
 plot(Variogram(BexisAGB.gls, form = ~y+x, resType='normalized')) #semivariance increases with distance
