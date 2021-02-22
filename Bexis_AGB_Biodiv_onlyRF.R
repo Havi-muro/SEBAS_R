@@ -76,10 +76,10 @@ validation <- validation[ , !(names(validation) %in% 'year')]
           ############        OR        #################
 
 # Assign the data to training and validation 2 sites training, 1 sites validation
-training <- subset(ForRF, explo == 'ALB')
+training <- subset(ForRF, explo != 'SCH')
 training <- training[ , !(names(training) %in% 'explo')]
 
-validation <- subset(ForRF, explo == 'HAI')
+validation <- subset(ForRF, explo == 'SCH')
 validation <- validation[ , !(names(validation) %in% 'explo')]
 
 dim(training)

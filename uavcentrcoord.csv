@@ -1,0 +1,151 @@
+,gid,explrtr,ep,type,source,VIP,SoilType,SoilType2,object,x,,y
+0,51,ALB,AEG01,grassland,UAV Acquisition ALB 2018,yes,NA,NA,1,525313,,5360594
+11,62,ALB,AEG02,grassland,UAV Acquisition ALB 2018,yes,NA,NA,12,535010,,5358415
+18,73,ALB,AEG03,grassland,UAV Acquisition ALB 2018,yes,NA,NA,19,539398,,5370311
+26,84,ALB,AEG04,grassland,UAV Acquisition ALB 2018,yes,NA,NA,27,531016,,5359610
+34,95,ALB,AEG05,grassland,UAV Acquisition ALB 2018,yes,NA,NA,35,532511,,5359895
+35,97,ALB,AEG06,grassland,UAV Acquisition ALB 2018,yes,NA,NA,36,532691,,5358196
+36,98,ALB,AEG07,grassland,UAV Acquisition ALB 2018,yes,NA,NA,37,527898,,5370556
+37,99,ALB,AEG08,grassland,UAV Acquisition ALB 2018,yes,NA,NA,38,536409,,5361079
+38,100,ALB,AEG09,grassland,UAV Acquisition ALB 2018,yes,NA,NA,39,537218,,5360815
+1,52,ALB,AEG10,grassland,UAV Acquisition ALB 2018,no,Rendzind,Leptosol,2,515743,,5358995
+2,53,ALB,AEG11,grassland,UAV Acquisition ALB 2018,no,Rendzind,Leptosol,3,525694,,5360594
+3,54,ALB,AEG12,grassland,UAV Acquisition ALB 2018,no,Rendzind,Leptosol,4,525928,,5358296
+4,55,ALB,AEG13,grassland,UAV Acquisition ALB 2018,no,Rendzind,Leptosol,5,526813,,5365512
+5,56,ALB,AEG14,grassland,UAV Acquisition ALB 2018,no,Rendzind,Leptosol,6,538408,,5361376
+6,57,ALB,AEG15,grassland,UAV Acquisition ALB 2018,no,Rendzind,Leptosol,7,533150,,5363004
+7,58,ALB,AEG16,grassland,UAV Acquisition ALB 2018,no,Rendzind,Leptosol,8,533725,,5360484
+8,59,ALB,AEG17,grassland,UAV Acquisition ALB 2018,no,Rendzind,Leptosol,9,538376,,5360295
+9,60,ALB,AEG18,grassland,UAV Acquisition ALB 2018,no,Rendzind,Leptosol,10,538609,,5362694
+10,61,ALB,AEG19,grassland,UAV Acquisition ALB 2018,no,Rendzind,Leptosol,11,533110,,5361885
+119,63,ALB,AEG20,grassland,Original coordinates from BeXIS 20907,no,Rendzind,Leptosol,120,526333,,5367111
+12,64,ALB,AEG21,grassland,UAV Acquisition ALB 2018,no,Rendzind,Leptosol,13,526419,,5367392
+13,65,ALB,AEG22,grassland,UAV Acquisition ALB 2018,no,Rendzind,Leptosol,14,537996,,5369790
+14,66,ALB,AEG23,grassland,UAV Acquisition ALB 2018,no,Rendzind,Leptosol,15,537899,,5369492
+15,67,ALB,AEG24,grassland,UAV Acquisition ALB 2018,no,Rendzind,Leptosol,16,536529,,5360414
+120,68,ALB,AEG25,grassland,Original coordinates from BeXIS 20907,no,Rendzind,Leptosol,121,519216,,5365242
+16,69,ALB,AEG26,grassland,UAV Acquisition ALB 2018,no,Rendzind,Leptosol,17,529897,,5360204
+121,70,ALB,AEG27,grassland,Original coordinates from BeXIS 20907,no,Rendzind,Leptosol,122,535509,,5358720
+122,71,ALB,AEG28,grassland,Original coordinates from BeXIS 20907,no,Rendzind,Leptosol,123,536394,,5362004
+17,72,ALB,AEG29,grassland,UAV Acquisition ALB 2018,no,Braunerde,Cambisol,18,526513,,5357496
+19,74,ALB,AEG30,grassland,UAV Acquisition ALB 2018,no,Rendzind,Leptosol,20,533811,,5360604
+20,75,ALB,AEG31,grassland,UAV Acquisition ALB 2018,no,Rendzind,Leptosol,21,534010,,5362393
+123,76,ALB,AEG32,grassland,Original coordinates from BeXIS 20907,no,Rendzind,Leptosol,124,535909,,5358405
+124,77,ALB,AEG33,grassland,Original coordinates from BeXIS 20907,no,Rendzind,Leptosol,125,536309,,5361009
+125,78,ALB,AEG34,grassland,Original coordinates from BeXIS 20907,no,Rendzind,Leptosol,126,537009,,5360513
+21,79,ALB,AEG35,grassland,UAV Acquisition ALB 2018,no,Braunerde,Cambisol,22,521316,,5360394
+22,80,ALB,AEG36,grassland,UAV Acquisition ALB 2018,no,Braunerde,Cambisol,23,522115,,5360995
+23,81,ALB,AEG37,grassland,UAV Acquisition ALB 2018,no,Braunerde,Cambisol,24,530612,,5359875
+24,82,ALB,AEG38,grassland,UAV Acquisition ALB 2018,no,Braunerde,Cambisol,25,531451,,5363392
+25,83,ALB,AEG39,grassland,UAV Acquisition ALB 2018,no,Braunerde,Cambisol,26,531511,,5360290
+27,85,ALB,AEG40,grassland,UAV Acquisition ALB 2018,no,Braunerde,Cambisol,28,541928,,5682333
+28,86,ALB,AEG41,grassland,UAV Acquisition ALB 2018,no,Braunerde,Cambisol,29,529513,,5659002
+29,87,ALB,AEG42,grassland,UAV Acquisition ALB 2018,no,Braunerde,Cambisol,30,527833,,5650880
+30,88,ALB,AEG43,grassland,UAV Acquisition ALB 2018,no,Braunerde,Cambisol,31,540108,,5675301
+31,89,ALB,AEG44,grassland,UAV Acquisition ALB 2018,no,Braunerde,Cambisol,32,532211,,5672493
+32,90,ALB,AEG45,grassland,UAV Acquisition ALB 2018,no,Braunerde,Cambisol,33,533896,,5654080
+33,91,ALB,AEG46,grassland,UAV Acquisition ALB 2018,no,Braunerde,Cambisol,34,532191,,5665613
+126,92,ALB,AEG47,grassland,Original coordinates from BeXIS 20907,no,Braunerde,Cambisol,127,533010,,5653259
+127,93,ALB,AEG48,grassland,Original coordinates from BeXIS 20907,no,Braunerde,Cambisol,128,536894,,5682024
+128,94,ALB,AEG49,grassland,Original coordinates from BeXIS 20907,no,Braunerde,Cambisol,129,537309,,5660652
+129,96,ALB,AEG50,grassland,Original coordinates from BeXIS 20907,no,Braunerde,Cambisol,130,534610,,5680461
+132,101,HAI,HEG01,grassland,UAV Acquisition HAI 2017,yes,NA,NA,133,598672,,5680264
+41,112,HAI,HEG02,grassland,UAV Acquisition HAI 2017,yes,NA,NA,42,600339,,5650590
+51,123,HAI,HEG03,grassland,UAV Acquisition HAI 2017,yes,NA,NA,52,600550,,5673153
+148,134,HAI,HEG04,grassland,UAV Acquisition HAI 2017,yes,NA,NA,149,600529,,5669479
+96,145,HAI,HEG05,grassland,UAV Acquisition HAI 2017,yes,NA,NA,97,592368,,5895813
+98,147,HAI,HEG06,grassland,UAV Acquisition HAI 2017,yes,NA,NA,99,597168,,5895679
+99,148,HAI,HEG07,grassland,UAV Acquisition HAI 2017,yes,NA,NA,100,598381,,5893525
+100,149,HAI,HEG08,grassland,UAV Acquisition HAI 2017,yes,NA,NA,101,598913,,5880138
+101,150,HAI,HEG09,grassland,UAV Acquisition HAI 2017,yes,NA,NA,102,596420,,5893507
+133,102,HAI,HEG10,grassland,UAV Acquisition HAI 2017,no,Pelosol,Vertisol,134,600914,,5896176
+134,103,HAI,HEG11,grassland,UAV Acquisition HAI 2017,no,Pseudogley,Stagnosol,135,601560,,5896809
+130,104,HAI,HEG12,grassland,Original coordinates from BeXIS 20907,no,Pseudogley,Stagnosol,131,610388,,5893216
+135,105,HAI,HEG13,grassland,UAV Acquisition HAI 2017,no,Pseudogley,Stagnosol,136,596285,,5897853
+136,106,HAI,HEG14,grassland,UAV Acquisition HAI 2017,no,Pseudogley,Stagnosol,137,600108,,5893808
+137,107,HAI,HEG15,grassland,UAV Acquisition HAI 2017,no,Pseudogley,Stagnosol,138,604134,,5893748
+138,108,HAI,HEG16,grassland,UAV Acquisition HAI 2017,no,Pseudogley,Stagnosol,139,602289,,5894031
+139,109,HAI,HEG17,grassland,UAV Acquisition HAI 2017,no,Pseudogley,Stagnosol,140,603021,,5896060
+39,110,HAI,HEG18,grassland,UAV Acquisition HAI 2017,no,Pelosol,Vertisol,40,599354,,5894297
+40,111,HAI,HEG19,grassland,UAV Acquisition HAI 2017,no,Pseudogley,Stagnosol,41,603210,,5894551
+42,113,HAI,HEG20,grassland,UAV Acquisition HAI 2017,no,Pseudogley,Stagnosol,43,595743,,5895823
+43,114,HAI,HEG21,grassland,UAV Acquisition HAI 2017,no,Pseudogley,Stagnosol,44,622468,,5894350
+44,115,HAI,HEG22,grassland,UAV Acquisition HAI 2017,no,Braunerde,Cambisol,45,592906,,5894009
+45,116,HAI,HEG23,grassland,UAV Acquisition HAI 2017,no,Pseudogley,Stagnosol,46,593627,,5895335
+131,117,HAI,HEG24,grassland,Original coordinates from BeXIS 20907,no,Pseudogley,Stagnosol,132,594606,,5899660
+46,118,HAI,HEG25,grassland,UAV Acquisition HAI 2017,no,Braunerde,Cambisol,47,592738,,5900087
+47,119,HAI,HEG26,grassland,UAV Acquisition HAI 2017,no,Braunerde,Cambisol,48,595668,,5896627
+48,120,HAI,HEG27,grassland,UAV Acquisition HAI 2017,no,Braunerde,Cambisol,49,611848,,5869457
+49,121,HAI,HEG28,grassland,UAV Acquisition HAI 2017,no,Braunerde,Cambisol,50,604435,,5870109
+50,122,HAI,HEG29,grassland,UAV Acquisition HAI 2017,no,Braunerde,Cambisol,51,604543,,5870483
+52,124,HAI,HEG30,grassland,UAV Acquisition HAI 2017,no,Braunerde,Cambisol,53,595007,,5870610
+53,125,HAI,HEG31,grassland,UAV Acquisition HAI 2017,no,Braunerde,Cambisol,54,585375,,5893007
+140,126,HAI,HEG32,grassland,UAV Acquisition HAI 2017,no,Braunerde,Cambisol,141,609819,,5880506
+141,127,HAI,HEG33,grassland,UAV Acquisition HAI 2017,no,Braunerde,Cambisol,142,599818,,5895919
+142,128,HAI,HEG34,grassland,UAV Acquisition HAI 2017,no,Braunerde,Cambisol,143,596870,,5893776
+143,129,HAI,HEG35,grassland,UAV Acquisition HAI 2017,no,Braunerde,Cambisol,144,598547,,5893690
+144,130,HAI,HEG36,grassland,UAV Acquisition HAI 2017,no,Braunerde,Cambisol,145,605899,,5896722
+145,131,HAI,HEG37,grassland,UAV Acquisition HAI 2017,no,Braunerde,Cambisol,146,606195,,5893142
+146,132,HAI,HEG38,grassland,UAV Acquisition HAI 2017,no,Braunerde,Cambisol,147,593898,,5675293
+147,133,HAI,HEG39,grassland,UAV Acquisition HAI 2017,no,Braunerde,Cambisol,148,594221,,5658568
+149,135,HAI,HEG40,grassland,UAV Acquisition HAI 2017,no,Braunerde,Cambisol,150,601592,,5684384
+87,136,HAI,HEG41,grassland,UAV Acquisition HAI 2017,no,Braunerde,Cambisol,88,595457,,5657005
+88,137,HAI,HEG42,grassland,UAV Acquisition HAI 2017,no,Braunerde,Cambisol,89,602626,,5655304
+89,138,HAI,HEG43,grassland,UAV Acquisition HAI 2017,no,Braunerde,Cambisol,90,600093,,5674294
+90,139,HAI,HEG44,grassland,UAV Acquisition HAI 2017,no,Braunerde,Cambisol,91,603699,,5682323
+91,140,HAI,HEG45,grassland,UAV Acquisition HAI 2017,no,Braunerde,Cambisol,92,605761,,5682627
+92,141,HAI,HEG46,grassland,UAV Acquisition HAI 2017,no,Braunerde,Cambisol,93,622494,,5681761
+93,142,HAI,HEG47,grassland,UAV Acquisition HAI 2017,no,Braunerde,Cambisol,94,595676,,5674665
+94,143,HAI,HEG48,grassland,UAV Acquisition HAI 2017,no,Braunerde,Cambisol,95,596243,,5681532
+95,144,HAI,HEG49,grassland,UAV Acquisition HAI 2017,no,Braunerde,Cambisol,96,597078,,5674647
+97,146,HAI,HEG50,grassland,UAV Acquisition HAI 2017,no,Braunerde,Cambisol,98,599098,,5681194
+103,1,SCH,SEG01,grassland,UAV Acquisition SCH 2019,yes,NA,NA,104,832720,,5680945
+63,12,SCH,SEG02,grassland,UAV Acquisition SCH 2019,NA,NA,NA,64,833403,,5675631
+72,23,SCH,SEG03,grassland,UAV Acquisition SCH 2019,yes,NA,NA,73,833674,,5898655
+75,34,SCH,SEG04,grassland,UAV Acquisition SCH 2019,no,NA,NA,76,834672,,5893549
+82,45,SCH,SEG05,grassland,UAV Acquisition SCH 2019,no,NA,NA,83,834630,,5896287
+83,47,SCH,SEG06,grassland,UAV Acquisition SCH 2019,no,NA,NA,84,809398,,5899782
+84,48,SCH,SEG07,grassland,UAV Acquisition SCH 2019,no,NA,NA,85,833210,,5881666
+85,49,SCH,SEG08,grassland,UAV Acquisition SCH 2019,no,NA,NA,86,835689,,5881393
+86,50,SCH,SEG09,grassland,UAV Acquisition SCH 2019,no,NA,NA,87,808749,,5881079
+54,2,SCH,SEG10,grassland,UAV Acquisition SCH 2019,no,Erdniedermoor,Histosol,55,834440,,5881769
+55,3,SCH,SEG11,grassland,UAV Acquisition SCH 2019,no,Gley,Gleysol,56,834141,,5898393
+56,4,SCH,SEG12,grassland,UAV Acquisition SCH 2019,no,Erdniedermoor,Histosol,57,832420,,5895365
+57,5,SCH,SEG13,grassland,UAV Acquisition SCH 2019,no,Braunerde,Cambisol,58,823500,,5881039
+58,6,SCH,SEG14,grassland,UAV Acquisition SCH 2019,no,Gley,Gleysol,59,833435,,5896095
+59,7,SCH,SEG15,grassland,UAV Acquisition SCH 2019,no,Erdniedermoor,Histosol,60,835190,,5896870
+60,8,SCH,SEG16,grassland,UAV Acquisition SCH 2019,no,Gley,Gleysol,61,834476,,5880776
+61,9,SCH,SEG17,grassland,UAV Acquisition SCH 2019,no,Erdniedermoor,Histosol,62,809648,,5881763
+102,10,SCH,SEG18,grassland,Original coordinates from BeXIS 20907,no,Parabraunerde,Luvisol,103,826054,,5896366
+62,11,SCH,SEG19,grassland,UAV Acquisition SCH 2019,no,Gley,Gleysol,63,835069,,5895060
+64,13,SCH,SEG20,grassland,UAV Acquisition SCH 2019,yes,Mulmniedermoor,Histosol,65,808900,,5370770
+65,14,SCH,SEG21,grassland,UAV Acquisition SCH 2019,no,Gley,Gleysol,66,808596,,5360290
+118,15,SCH,SEG22,grassland,UAV Acquisition SCH 2019,no,Gley,Gleysol,119,832896,,5362998
+66,16,SCH,SEG23,grassland,UAV Acquisition SCH 2019,no,Mulmniedermoor,Histosol,67,836326,,5367776
+67,17,SCH,SEG24,grassland,UAV Acquisition SCH 2019,no,Mulmniedermoor,Histosol,68,834445,,5368191
+68,18,SCH,SEG25,grassland,UAV Acquisition SCH 2019,no,Mulmniedermoor,Histosol,69,809022,,5366592
+69,19,SCH,SEG26,grassland,UAV Acquisition SCH 2019,no,Mulmniedermoor,Histosol,70,835840,,5367092
+104,20,SCH,SEG27,grassland,Original coordinates from BeXIS 20907,no,Mulmniedermoor,Histosol,105,814917,,5362993
+70,21,SCH,SEG28,grassland,UAV Acquisition SCH 2019,no,Erdniedermoor,Histosol,71,835118,,5363308
+71,22,SCH,SEG29,grassland,UAV Acquisition SCH 2019,no,Erdniedermoor,Histosol,72,834639,,5367192
+73,24,SCH,SEG30,grassland,UAV Acquisition SCH 2019,no,Fahlerde,Albeluvisol,74,822967,,5361494
+105,25,SCH,SEG31,grassland,Original coordinates from BeXIS 20907,no,Braunerde,Cambisol,106,823281,,5659592
+74,26,SCH,SEG32,grassland,UAV Acquisition SCH 2019,no,Parabraunerde,Luvisol,75,823034,,5661931
+106,27,SCH,SEG33,grassland,Original coordinates from BeXIS 20907,no,Fahlerde,Albeluvisol,107,824982,,5647611
+107,28,SCH,SEG34,grassland,Original coordinates from BeXIS 20907,no,Fahlerde,Albeluvisol,108,825317,,5681415
+108,29,SCH,SEG35,grassland,Original coordinates from BeXIS 20907,no,Parabraunerde,Luvisol,109,825413,,5682044
+109,30,SCH,SEG36,grassland,Original coordinates from BeXIS 20907,no,Fahlerde,Albeluvisol,110,824647,,5679606
+110,31,SCH,SEG37,grassland,Original coordinates from BeXIS 20907,no,Fahlerde,Albeluvisol,111,826100,,5683504
+111,32,SCH,SEG38,grassland,Original coordinates from BeXIS 20907,no,Braunerde,Cambisol,112,812855,,5658440
+112,33,SCH,SEG39,grassland,Original coordinates from BeXIS 20907,no,Braunerde,Cambisol,113,823729,,5654562
+113,35,SCH,SEG40,grassland,Original coordinates from BeXIS 20907,no,Parabraunerde,Luvisol,114,823882,,5658695
+114,36,SCH,SEG41,grassland,Original coordinates from BeXIS 20907,no,Parabraunerde,Luvisol,115,824613,,5659388
+76,37,SCH,SEG42,grassland,UAV Acquisition SCH 2019,no,Parabraunerde,Luvisol,77,834339,,5663185
+77,38,SCH,SEG43,grassland,UAV Acquisition SCH 2019,no,Parabraunerde,Luvisol,78,834224,,5674571
+78,39,SCH,SEG44,grassland,UAV Acquisition SCH 2019,no,Braunerde,Cambisol,79,834022,,5675217
+79,40,SCH,SEG45,grassland,UAV Acquisition SCH 2019,no,Fahlerde,Albeluvisol,80,833620,,5654407
+115,41,SCH,SEG46,grassland,Original coordinates from BeXIS 20907,no,Braunerde,Cambisol,116,823952,,5654519
+116,42,SCH,SEG47,grassland,Original coordinates from BeXIS 20907,no,Parabraunerde,Luvisol,117,823970,,5663605
+80,43,SCH,SEG48,grassland,UAV Acquisition SCH 2019,no,Parabraunerde,Luvisol,81,808361,,5664055
+81,44,SCH,SEG49,grassland,UAV Acquisition SCH 2019,no,Fahlerde,Albeluvisol,82,826005,,5663413
+117,46,SCH,SEG50,grassland,Original coordinates from BeXIS 20907,no,Braunerde,Cambisol,118,817800,,5647131
