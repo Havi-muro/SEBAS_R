@@ -30,7 +30,8 @@ Bexis5 <- subset(Bexis3 , S2CB == FALSE)
 Bexis6 <- data.frame(
   x             = Bexis5$x,
   y             = Bexis5$y,
-  year            =Bexis5$Year,
+  year          = Bexis5$Year,
+  explo         = Bexis5$explo,
   height        = as.numeric(Bexis5$vegetation_height_mean_cm),
   vascular      = as.numeric(Bexis5$number_vascular_plants),
   biomass       = Bexis5$biomass_g,
@@ -50,14 +51,15 @@ colSums(is.na(Bexis6))
 
 # Remove missing values:
 Bexis7 <- subset(Bexis6, biomass != "NA")
-Bexis7 <- subset(Bexis6, Rich != "NA")
+#Bexis7 <- subset(Bexis6, Rich != "NA")
 Bexis7 <- subset(Bexis7, LAI != 'NA')
 
 #Select single year
-Bexis8 <- subset(Bexis7, year == '2020')
+Bexis8 <- subset(Bexis7, year == '2019')
+Bexis8 <- subset(Bexis8, explo == 'ALB')
 
 #Select columns to build distance matrix
-BexisAGB <-Bexis8[c(6,10,1,2)]
+BexisAGB <-Bexis8[c(7,11,1,2)]
 str(BexisAGB)
 AGB.dist <-as.matrix(dist(cbind(BexisAGB$x, BexisAGB$y)))
 AGB.dist.inv <- 1/AGB.dist
@@ -69,7 +71,16 @@ AGB.dist.inv[1:5, 1:5]
 # If the observed value of I is significantly greater than the expected value, 
 # then the values of x are positively autocorrelated, 
 # whereas if Iobserved <<< Iexpected, this will indicate negative autocorrelation.
-Moran.I(BexisAGB$biomass, AGB.dist.inv)
+
+# H null is that there is no spatial autocorrelation and that the distribution is random
+MoranI<-Moran.I(BexisAGB$biomass, AGB.dist.inv)
+MoranI
+
+ZI <- (MoranI$observed - MoranI$expected)/sqrt(MoranI$sd)
+ZI
+
+# -1.65 < ZI < 1.65, therfore there is a high chance that the  pattern is random
+# we accept H null
 
 # Generate variogram
 # measure of the degree of similarity between pairs of points separated by a specific distance
