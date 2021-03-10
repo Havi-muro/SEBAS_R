@@ -3,6 +3,14 @@
 # Preprocess the bexis data and run and Random Forest Regression
 # to predict biomass and biodiversity data
 
+# Field data from bexis Botany core team
+
+# Predictors: LUI, slope, aspect, soil type and satellite info
+# Sensors used: Sentinel-2 vegetation indices for may and Sentinel-
+# annual metrics
+
+# It estimates mowing dates from the interviews with farmers
+
 ################################################################
 
 library(readxl)
@@ -11,6 +19,7 @@ library(data.table)
 library(GGally)
 library(lattice)  
 library(ggplot2)
+library(ggradar)
 library(mgcv)
 library(lme4)
 library(rgdal)
@@ -22,9 +31,10 @@ library(reshape)
 library(fields)
 library(mapdata)
 library(tidyr)
+library(caret)
+library(robustHD)
 library(randomForest)
-require(caTools)
-library(caTools)
+
 
 #############################################################################################################
 ######################################    DATA EXPLORATION    ###############################################
@@ -34,9 +44,14 @@ setwd('C:/Users/Janny/Desktop/SEBAS/Bexis/Bexis_BiomDiversity_Model')
 dir()
 
 #Open different datasets
+
+#Biomass data
 BexisRaw <- read_excel("C:/Users/Janny/Desktop/SEBAS/Bexis/Bexis_BiomDiversity_Model/AGB_PFT_Biodiv_NPK_S2S1_2017-2020_SoilTypes_4.xlsx", sheet = 'Sheet1')
+
+#cutting dates
 BexisSurvey <- fread('Land use in grasslands_ raw data of yearly owner interviews-Filtered.txt')
 BexisSurvey <- as.data.frame(BexisSurvey)
+
 str(BexisSurvey)
 str(BexisRaw)
 
@@ -60,7 +75,7 @@ SCH2020<- fread('SCH_2020_S2_QMNDVI.csv')
 
 S2Metrics <- rbind(ALB2017, ALB2018, ALB2019, ALB2020, HAI2017, HAI2018, HAI2019, HAI2020, SCH2017, SCH2018, SCH2019, SCH2020)
 
-#Select variables and transform date to DOY
+#Select mowing data variables and transform date to DOY
 CutDate_vars <- c('Year', 'EP_PlotID' , 'DateCut1', 'Cuts')
 CutDate <- BexisSurvey[CutDate_vars]
 str(CutDate)
@@ -70,19 +85,19 @@ tmp$yday
 CutDOY <- cbind(CutDate, tmp$yday)
 str(CutDOY)
 
-#change names of common fields and merge both datsets
+#change names of common fields and merge biomass & cutting dates
 names(CutDOY)[names(CutDOY) == "EP_PlotID"] <- "EpPlotID"
 names(CutDOY)[names(CutDOY) == "tmp$yday"] <- "CutDOY"
 
 str(CutDOY)
 
 #Merge by several variables
-BexisMerge <- merge(BexisRaw, CutDOY, by=c('Year', 'EpPlotID'))
+BexisMerge <- merge(BexisRaw, CutDOY, by=c('Year', 'EpPlotID'), all.x=TRUE)
 str(BexisMerge)
 
 BexisRecent <- subset(BexisMerge, Year > 2016)
 
-#Plot the cut dates
+#Plot the cut dates box plots
 p <- ggplot(data = BexisRecent,
             aes( x = explo, 
                  y = CutDOY,
@@ -106,6 +121,7 @@ d <- ggplot(data = BexisRecent,
 d <- d + geom_boxplot()  
 d
 
+##################################################################################
 #Calculate stats of the mowing and biomass dates for recent dates
 tapply(as.numeric(BexisRecent$DOY_bm), BexisRecent$explo, summary)
 tapply(BexisRecent$CutDOY, BexisRecent$explo, summary)
@@ -117,16 +133,23 @@ tapply(BexisRecent$CutDOY, BexisRecent$explo, summary)
 #Biomass collection in Hai is between 11 & 18 May
 #Biomass collection in SCH is between 19 & 25 May
 
-#Merge data with satellite info
+##################################################################################
+#Merge bexis data with satellite info
 Bexis_S2Metrics <- merge(BexisRecent, S2Metrics, by=c('Year','ep'))
 str(Bexis_S2Metrics)
-
+variable.names(Bexis_S2Metrics)
 #Select the Final Variables we will use
-MyVars <- c("Year", "ep", 'explo', "x","y","number_vascular_plants","biomass_g", "SpecRichness", "Shannon", "Simpson", "FisherAlpha", "PielouEvenness",
-"LUI_2015_2018", "SoilTypeFusion","slope" ,"aspect", 'NDVI.y', 'B3', 'B4', 'B5', 'B6', 'B7','B8','B8A', 'B11', 'B12')
+MyVars <- c("Year", "ep", 'explo', "x","y","number_vascular_plants","biomass_g", 
+            "SpecRichness", "Shannon", "Simpson", "FisherAlpha", "PielouEvenness",
+            "LUI_2015_2018", "SoilTypeFusion","slope" ,"aspect", 'LAI',
+            'B2','B3', 'B4', 'B5', 'B6', 'B7','B8','B8A', 'B11', 'B12',
+            'VHMax_May', 'VVMax_May','NDVI.x', 'VVStd', 'VHStd'    
+            )
+
 BexisFV<-Bexis_S2Metrics[MyVars]
 str(BexisFV)
 
+# NAs cause R to read some field as string. Transform to numeric
 BexisFVnum <- transform(BexisFV, number_vascular_plants = as.numeric(number_vascular_plants), 
                         SpecRichness = as.numeric(SpecRichness),
                         Shannon  = as.numeric(Shannon),
@@ -134,170 +157,134 @@ BexisFVnum <- transform(BexisFV, number_vascular_plants = as.numeric(number_vasc
                         FisherAlpha = as.numeric(FisherAlpha),
                         PielouEvenness = as.numeric(PielouEvenness)
                         )
-
 str(BexisFVnum)
 
-####################################################################################
-#This is now with the old data from single Sentinel-2 image
-#rename and remove cloudy plots
-Bexis2 <- subset(BexisRaw, SW == 2)
-#Remove cases where BiomassDOY<CutDOY<S2 =IF(AND(J2<AH2,AH2<AG2),TRUE,FALSE)
-Bexis3 <- subset(Bexis2 , BCS2 == FALSE)
-#Remove cases where S2<CutDOY<BiomassDOY =IF(AND(AG2<AH2, AH2<J2),TRUE,FALSE)
-Bexis4 <- subset(Bexis3 , S2CB == FALSE)
+# Calculate several vegetation indices (https://www.indexdatabase.de/db/s-single.php?id=96)
+BexisFVnum$EVI <- cbind(2.5*(BexisFVnum$B8-BexisFVnum$B4)/((BexisFVnum$B8+6*BexisFVnum$B4-7.5*BexisFVnum$B2)+1))
+BexisFVnum$SAVI <- cbind((BexisFVnum$B8-BexisFVnum$B4)/(BexisFVnum$B8+BexisFVnum$B4+0.428)*(1+0.428))
+BexisFVnum$GNDVI <- cbind((BexisFVnum$B8-BexisFVnum$B3)/(BexisFVnum$B8+BexisFVnum$B3))
+BexisFVnum$ARVI <- cbind((BexisFVnum$B8A-BexisFVnum$B4-0.106*(BexisFVnum$B4-BexisFVnum$B2))/(BexisFVnum$B8A+BexisFVnum$B4-0.106*(BexisFVnum$B4-BexisFVnum$B2)))
+BexisFVnum$CHLRE <- cbind((BexisFVnum$B7/BexisFVnum$B5)^(-1))
+BexisFVnum$MCARI <- cbind((BexisFVnum$B5-BexisFVnum$B4)-0.2*(BexisFVnum$B5-BexisFVnum$B3)*(BexisFVnum$B5/BexisFVnum$B4))
+BexisFVnum$NDII <- cbind((BexisFVnum$B8-BexisFVnum$B11)/(BexisFVnum$B8+BexisFVnum$B11))
+BexisFVnum$MIRNIR <- cbind((BexisFVnum$B12-BexisFVnum$B8)/(BexisFVnum$B12+BexisFVnum$B8))
+BexisFVnum$MNDVI <- cbind((BexisFVnum$B8A-BexisFVnum$B12)/(BexisFVnum$B8A+BexisFVnum$B12))
 
-#we take out Sch because of too much mulch
-#bio_nutr4 <- subset(bio_nutr4, expl !='S') 
+MyVars2 <- c("Year", "ep", 'explo', "x","y","number_vascular_plants","biomass_g", 
+            "SpecRichness", "Shannon", "Simpson", "FisherAlpha", "PielouEvenness",
+            "LUI_2015_2018", "SoilTypeFusion","slope" ,"aspect", 'LAI',
+            'EVI','SAVI', 'GNDVI', 'ARVI', 'CHLRE', 'MCARI','NDII','MIRNIR', 'MNDVI',
+            'VHMax_May', 'VVMax_May','NDVI.x', 'VVStd', 'VHStd'  
+            )
 
-#Clump land use indices into 4 groups
-LUIgroup <- cut(Bexis4$LUI_2015_2018,
-                                       breaks =c (0,1,2,3,4),
-                                       labels = c('very low', 'low', 'medium', 'high'))
-Bexis5 <- cbind(Bexis4, LUIgroup)
+BexisIndices<-BexisFVnum[MyVars2]
+str(BexisIndices)
 
-#Change names and write year and editor as factor
-Bexis6 <- data.frame(
- ep        = Bexis5$ep,
- explo         = factor(Bexis5$explo),
- year          = factor(Bexis5$Year),
-# DOY_releves   = Bexis5$DOY_releves,
-# DOY_biomass   = Bexis5$DOY_bm,
-# editor        = factor(Bexis5$editor),
- x             = Bexis5$x,
- y             = Bexis5$y, 
- height        = as.numeric(Bexis5$vegetation_height_mean_cm),
- vascular      = as.numeric(Bexis5$number_vascular_plants),
- vasc_cum      = as.numeric(Bexis5$cover_cumulative_all_vascular_plants),
- biomass       = Bexis5$biomass_g,
-LUIgroup       =Bexis5$LUIgroup,
-Soil           =factor(Bexis5$SoilTypeFusion),
-Slope          =Bexis5$slope,
-Aspect         = Bexis5$aspect,
-  Rich          = as.numeric(Bexis5$SpecRichness),
-  Shann         = as.numeric(Bexis5$Shannon),
-  Simps         = as.numeric(Bexis5$Simpson),
-  invSimps      = as.numeric(Bexis5$invSimpson),
-  uniSimps      = as.numeric(Bexis5$uniSimpson),
-  alpha         = as.numeric(Bexis5$FisherAlpha),
-  Evenn         = as.numeric(Bexis5$PielouEvenness),
-  SW            = factor(Bexis5$SW),
-  LAI           = Bexis5$LAI,
-  cab           = Bexis5$cab,
-  cw            = Bexis5$cw,
-  fpar          = Bexis5$fpar,
-  fcover        = Bexis5$fcover,
-  S2b2          = Bexis5$S2b2,
-  S2b3          = Bexis5$S2b3,
-  S2b4          = Bexis5$S2b4,
-  S2b5          = Bexis5$S2b5,
-  S2b6          = Bexis5$S2b6,
-  S2b7          = Bexis5$S2b7,
-  S2b8          = Bexis5$S2b8,
-  S2b8a         = Bexis5$S2b8a,
-  S2b11         = Bexis5$S2b11,
-  S2b12         = Bexis5$S2b12,
-  NDVI          = Bexis5$NDVI,
-  NDII         = Bexis5$NDII,
-  VHMax        = Bexis5$VHMax,
-  VHMedian     = Bexis5$VHMean,
-  VHMin        = Bexis5$VHMin,
-  VHStd        = Bexis5$VHStd,
-  VVMax        = Bexis5$VVMax,
-  VVMedian     = Bexis5$VVMean,
-  VVMin        = Bexis5$VVMin,
-  VVStd        = Bexis5$VVStd,
-VHMax_May        = Bexis5$VHMax_May,
-VHMedian_May     = Bexis5$VHMean_May,
-VHMin_May        = Bexis5$VHMin_May,
-VHStd_May        = Bexis5$VHStd_May,
-VVMax_May        = Bexis5$VVMax_May,
-VVMedian_May     = Bexis5$VVMean_May,
-VVMin_May        = Bexis5$VVMin_May,
-VVStd_May        = Bexis5$VVStd_May,
-Phase          = Bexis5$Phase,
-Amp            = Bexis5$Amp
-  )
-str(Bexis6)
-
-##################   BIOMASS ########################
+##################  BIOMASS ########################
 
 #Are there NAs in biomass?
-is.na(Bexis6$biomass)   
-sum(is.na(Bexis6$biomass))
-colSums(is.na(Bexis6))
+is.na(BexisIndices$biomass_g)   
+sum(is.na(BexisIndices$biomass_g))
+colSums(is.na(BexisIndices))
 
-#Are there NAs in LAI?
-is.na(Bexis6$LAI)   
-sum(is.na(Bexis6$LAI))
-colSums(is.na(Bexis6))
+#Are there NAs in NDVI.y?
+is.na(BexisIndices$NDVI.y)   
+sum(is.na(BexisIndices$NDVI.y))
+colSums(is.na(BexisIndices))
 
 # Remove missing values:
-Bexis7 <- subset(Bexis6, biomass != "NA")
-Bexis7<- subset(Bexis7, LAI != "NA")
-Bexis7 <- subset(Bexis7, VHMax != 'NA')
+BexisIndices2 <- subset(BexisIndices, biomass_g != "NA")
+BexisIndices3 <- subset(BexisIndices2, NDVI.y != "NA")
 
 #Plot to discover outliers and remove them
-plot(Bexis7$S2b3)
-identify(x=Bexis7$S2b3)
-
-Bexis7 <- Bexis7[-c(279, 324), ]
-plot(Bexis7$S2b2)
-
-plot(Bexis7$LAI)
-identify(x=Bexis7$LAI)
-#Some outliers in LAI remain, but we'll let them be
-str(Bexis7)
+plot(BexisIndices3$biomass_g)
+plot(BexisIndices3$NDVI.y)
+#identify(x=Bexis7$S2b3)
 
 #Export for DL comparison
 #write.csv(Bexis7, "AGB_Biodiv_bexis_forRF.csv")
 
 #Post-hoc testing, to see if there are observer, year or location effect.
-p <- ggplot(data = Bexis7,
-             aes(	x = LAI, 
-                  y = biomass,
+p <- ggplot(data = BexisIndices3,
+             aes(	x = NDVI.y, 
+                  y = biomass_g,
                   col = explo, 
                   group = explo,))
 p <- p + geom_point()
-p <- p + xlab("LAI") + ylab("biomass")
+p <- p + xlab("NDVI") + ylab("biomass")
 p <- p + theme(text = element_text(size=15))
-p <- p + geom_smooth(data = Bexis7, 
+p <- p + geom_smooth(data = BexisIndices3, 
             method = "lm", 
             se = FALSE, 
-            aes(y = biomass, 
-                x = LAI, 
+            aes(y = biomass_g, 
+                x = NDVI.y, 
                 group = explo,  
                 col = explo))  
-p <- p + facet_grid(year ~ explo, scales = "fixed")
+p <- p + facet_grid(Year ~ explo, scales = "fixed")
 p
-
-G <- ggplot(data = Bexis7,
-            aes( x = LAI, 
-                 y = biomass,
-                 col = LUIgroup, 
-                 group = LUIgroup,))
-G <- G + geom_point()
-G <- G + xlab("LAI") + ylab("biomass")
-G <- G + theme(text = element_text(size=15))
-G <- G + geom_smooth(data = Bexis7, 
-                     method = "lm", 
-                     se = FALSE, 
-                     aes(y = biomass, 
-                         x = LAI, 
-                         group = LUIgroup,  
-                         col = LUIgroup))  
-G <- G + facet_grid(LUIgroup ~ explo, scales = "fixed")
-G
 
 
 #Conclusions of data exploration
 #Points in SCH seem to have a much larger variance in biomass
-#No interaction between sites, which is good.
-#Many missing points because of lack of images and other outliers
 
-Bexis7Hai<- subset(Bexis7, explo == "HAI")
-Bexis7Alb<- subset(Bexis7, explo == "ALB")
-Bexis7Sch<- subset(Bexis7, explo == "SCH")
-Bexis7AlbHai<- subset(Bexis7, explo != "SCH")
+#############################################################################################################
+####################################      Radar Plot       ##################################################
+#############################################################################################################
+
+# Eliminate all records with NAs
+Bexis_noNAN<-na.omit(BexisIndices)
+
+# Select the variables for the radar plot
+MyVars_STD <- c("biomass_g", 'LUI_2015_2018',
+             "slope" ,"aspect",'EVI','SAVI',
+             'GNDVI', 'ARVI', 'CHLRE', 'MCARI','NDII','MIRNIR','MNDVI',
+             'VHMax_May', 'VVMax_May','NDVI.x', 'VVStd', 'VHStd'  
+)
+
+
+# Separate observation info, soils and variables to standardize
+MyVarsInfo <- c("Year","ep", "explo")
+
+Bexis_info<-Bexis_noNAN[MyVarsInfo]
+
+# Separate soil types and One hot encode them
+soil <- Bexis_noNAN['SoilTypeFusion']
+Bexis_hotSoil <- dummyVars(" ~ .", data = soil)
+Bexis_hotSoil2 <- data.frame(predict(Bexis_hotSoil, newdata = soil))
+
+names(Bexis_hotSoil2)[names(Bexis_hotSoil2) == "SoilTypeFusionBraunerde"] <- "Braunerde"
+names(Bexis_hotSoil2)[names(Bexis_hotSoil2) == "SoilTypeFusionErdniedermoor"] <- "Erdniedermoor"
+names(Bexis_hotSoil2)[names(Bexis_hotSoil2) == "SoilTypeFusionFahlerde"] <- "Fahlerde"
+names(Bexis_hotSoil2)[names(Bexis_hotSoil2) == "SoilTypeFusionMulmniedermoor"] <- "Mulmniedermoor"
+names(Bexis_hotSoil2)[names(Bexis_hotSoil2) == "SoilTypeFusionParabraunerde"] <- "Parabraunerde"
+names(Bexis_hotSoil2)[names(Bexis_hotSoil2) == "SoilTypeFusionPseudogley"] <- "Pseudogley"
+names(Bexis_hotSoil2)[names(Bexis_hotSoil2) == "SoilTypeFusionRendzina"] <- "Rendzina"
+
+head(Bexis_hotSoil2)
+
+# Separate the numerical variables and standardize them
+Bexis_STD<-Bexis_noNAN[MyVars_STD]
+
+Bexis_STD2<-robStandardize(Bexis_STD)
+head(Bexis_STD2)
+
+# bind the obs info, the one hot encoded soils and the standardized numerical variables
+BexisRada <- cbind(Bexis_info, Bexis_STD2, Bexis_soils)
+head(BexisRada)
+
+# The radar plot is built with mean data of each variable in each site and year
+# Select site and year. Radar plot is produced in excel.
+# Perhaps I have to standardize by year?
+explo1 <- 'SCH'
+Year1 <- '2020'
+
+siteyear<-subset(BexisRada, explo == explo1 & Year == Year1)
+head(siteyear)
+vars_num<-siteyear[, 4:28]
+vars_mean <- colMeans(vars_num)
+#setwd('C:/Users/Janny/Desktop/SEBAS/Bexis')
+write.csv(vars_mean, file = paste(explo1, Year1, '.csv'))
+
 
 #############################################################################################################
 ####################################  Apply Random Forest ###################################################
@@ -310,43 +297,36 @@ Bexis7AlbHai<- subset(Bexis7, explo != "SCH")
 #Take the response variable and the predictors
 #Choose all, or per site Bexis7Hai, Bexis7Alb, Bexis7Sch
 
-ForRF <- Bexis7[c("biomass"
+ForRF <- BexisIndices3[c("biomass_g"
                 #  ,'x'
                 #  ,'y'
                   ,'explo'
-                #  ,'year'
-                  ,'Slope'
-                #  ,'Aspect'
-                  ,'Soil'
+                  ,'Year'
+                  ,'slope'
+                #  ,'sspect'
+                  ,'SoilTypeFusion'
                 #  ,'LUIgroup'
-                  ,'LAI', 'NDVI', 'NDII'
+                  ,'NDVI.y', 'EVI','SAVI', 'GNDVI', 'ARVI', 'CHLRE', 'MCARI','NDII','MIRNIR', 'MNDVI'
                   ,'VVStd', 'VHStd'
-                #  ,'VHMedian_May','VVMedian_May',
+                  ,'VHMax_May','VVMax_May'
                 #  ,'Phase'
                 #  ,'Amp'
 )]
 
-# Set random seed to make results reproducible:
-#set.seed(48)
-# Calculate the size of each of the data sets:
-#data_set_size <- floor(nrow(ForRF)/3)
-# Generate a random sample of "data_set_size" indexes
-#indexes <- sample(1:nrow(ForRF), size = data_set_size)
-
 # Assign the data to training and validation 3 years training, 1 year validation
-training <- subset(ForRF, year != '2020')
-training <- training[ , !(names(training) %in% 'year')]
+training <- subset(ForRF, Year != '2020')
+training <- training[ , !(names(training) %in% 'Year')]
 
-validation <- subset(ForRF, year == '2020')
-validation <- validation[ , !(names(validation) %in% 'year')]
+validation <- subset(ForRF, Year == '2020')
+validation <- validation[ , !(names(validation) %in% 'Year')]
 
           ############        OR        #################
 
 # Assign the data to training and validation 2 sites training, 1 sites validation
-training <- subset(ForRF, explo == 'SCH')
+training <- subset(ForRF, explo != 'HAI')
 training <- training[ , !(names(training) %in% 'explo')]
 
-validation <- subset(ForRF, explo == 'ALB')
+validation <- subset(ForRF, explo == 'HAI')
 validation <- validation[ , !(names(validation) %in% 'explo')]
 
            ############        OR        #################
@@ -361,13 +341,14 @@ indexes <- sample(1:nrow(ForRF), size = data_set_size)
 training <- ForRF[-indexes,]
 validation <- ForRF[indexes,]
 
+          ############                   #################
 
 dim(training)
 dim(validation)
 
 #Run RF for our response variable in our training dataset
 rf <- randomForest(
-  formula = biomass ~ .,
+  formula = biomass_g ~ .,
   data=training, 
   ntree=500,
   importance=TRUE,
@@ -378,16 +359,23 @@ varImpPlot(rf, main = "Accuracy and Gini index for biomass prediction" )
 #Use the validation dataset to validate the model.
 rf
 pred <- predict(rf, newdata=validation)
-plot(x= pred, y = validation$biomass, main = "Biomass Predicted vs Validated for S1 & S2")
-RMSE <- sqrt(sum((pred - validation$biomass)^2)/length(pred))
+plot(x= pred, y = validation$biomass_g, main = "Biomass Predicted vs Validated for S2")
+RMSE <- sqrt(sum((pred - validation$biomass_g)^2)/length(pred))
 RMSE
 #divide it by the mean of our outcome variable so we can interpret RMSE in terms of percentage of the mean:
-print(RMSE/mean(validation1$biomass)) 
+print(RMSE/mean(validation$biomass)) 
 
 #identify(x= pred, y = validation1$biomass)
 # weirdvalues<-Bexis7[c(49,  72, 114),]
 # print(weirdvalues)
 
+#ALB for validation RMSE=63, adjusted R2 = 34
+#HAI for validation RMSE= 96 , adjusted R2 = 29
+#SCH for validation RMSE = 75, adjusted R2 = 49
+
+#2020 for validation RMSE = 74, adjusted R2 = 46
+#without explo, RMSE = 74, adjusted R2 = 35, and soil type and slope get more important
+#with S1 Max and std RMSE = 68, adjusted R2 = 35. With explo, adjusted r is 45, but RMSE remains
 ########################################### Spp Richness #####################################################
 
 #Take the response variable and the predictors

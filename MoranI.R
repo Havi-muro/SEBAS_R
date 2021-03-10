@@ -54,15 +54,20 @@ Bexis7 <- subset(Bexis6, biomass != "NA")
 #Bexis7 <- subset(Bexis6, Rich != "NA")
 Bexis7 <- subset(Bexis7, LAI != 'NA')
 
-#Select single year
+#Select single year or single site
+#Can't work with multimple samples in same coordinates
 Bexis8 <- subset(Bexis7, year == '2019')
-Bexis8 <- subset(Bexis8, explo == 'ALB')
+Bexis8 <- subset(Bexis7, explo == 'ALB')
 
 #Select columns to build distance matrix
-BexisAGB <-Bexis8[c(7,11,1,2)]
+BexisAGB <-Bexis7[c(7,11,1,2)]
 str(BexisAGB)
 AGB.dist <-as.matrix(dist(cbind(BexisAGB$x, BexisAGB$y)))
 AGB.dist.inv <- 1/AGB.dist
+
+#If we used several samples from same site we might get infinite values in the matrix we have to remove
+AGB.dist.inv[is.infinite(AGB.dist.inv)] <- 0
+
 diag(AGB.dist.inv) <- 0
      
 AGB.dist.inv[1:5, 1:5]
@@ -73,7 +78,7 @@ AGB.dist.inv[1:5, 1:5]
 # whereas if Iobserved <<< Iexpected, this will indicate negative autocorrelation.
 
 # H null is that there is no spatial autocorrelation and that the distribution is random
-MoranI<-Moran.I(BexisAGB$biomass, AGB.dist.inv)
+MoranI<-Moran.I(BexisAGB$biomass, AGB.dist.inv, na.rm=TRUE)
 MoranI
 
 ZI <- (MoranI$observed - MoranI$expected)/sqrt(MoranI$sd)
