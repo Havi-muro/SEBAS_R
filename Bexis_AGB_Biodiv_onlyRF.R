@@ -27,7 +27,7 @@ library(caTools)
 
 setwd('C:/Users/Janny/Desktop/SEBAS/Bexis/Bexis_BiomDiversity_Model')
 dir()
-Bexis_clean <- read.csv("C:/Users/Janny/Desktop/SEBAS/Bexis/Bexis_BiomDiversity_Model/AGB_Biodiv_bexis_forRF.csv")
+Bexis_clean <- read.csv("C:/Users/Janny/Desktop/SEBAS/Bexis/Bexis_BiomDiversity_Model/BexisMaxNDVIComposite.csv")
 #View(SE)
 str(Bexis_clean)
 
@@ -35,61 +35,83 @@ str(Bexis_clean)
 ####################################  Apply Random Forest ###################################################
 #############################################################################################################
 
-#We still have NAs in some SAR data, but we will use the na.action=na.omit from RandomForest
-
 ###########################################  Biomass ########################################################
 
 #Take the response variable and the predictors
 #Choose all, or per site Bexis7Hai, Bexis7Alb, Bexis7Sch
 
-ForRF <- Bexis_clean[c("biomass"
-                #  ,'x'
-                #  ,'y'
-                  ,'explo'
-                #  ,'year'
-                #  ,'Slope'
-                #  ,'Aspect'
-                  ,'Soil'
-                #  ,'LUIgroup'
-                  ,'LAI', 'NDVI', 'NDII'
-                #  ,'VVStd'
-                #  ,'VHStd'
-                # ,'VHMedian_May','VVMedian_May'
-                #  ,'Phase'
-                #  ,'Amp'
+ForRF <- Bexis_clean[c(#"Year",
+                       #"ep",
+                       #"explo",
+                       #"x",
+                       #"y",
+                       "biomass_g",
+                      #"LUI_2015_2018",
+                      #"SoilTypeFusion",
+                      "slope",
+                      #"aspect",
+                     # "LAI",
+                      #"EVI",
+                      "SAVI",
+                      "GNDVI",
+                      "ARVI",
+                      "CHLRE",
+                      "MCARI",
+                      "NDII",
+                      "MIRNIR",
+                      "MNDVI",
+                     # "VHMax_May",
+                    #  "VVMax_May",
+                      "NDVI.y"
+                      #"VVStd","VHStd"                 
 )]
 
+ForRF <-na.omit(ForRF)
+
 # Set random seed to make results reproducible:
-#set.seed(48)
+set.seed(48)
 # Calculate the size of each of the data sets:
-#data_set_size <- floor(nrow(ForRF)/3)
-# Generate a random sample of "data_set_size" indexes
-#indexes <- sample(1:nrow(ForRF), size = data_set_size)
+data_set_size <- floor(nrow(ForRF)/3)
+#Generate a random sample of "data_set_size" indexes
+indexes <- sample(1:nrow(ForRF), size = data_set_size)
+# Assign the data to training and validation
+training <- ForRF[-indexes,]
+validation <- ForRF[indexes,]
+
+############        OR        #################
 
 # Assign the data to training and validation 3 years training, 1 year validation
-training <- subset(ForRF, year != '2020')
-training <- training[ , !(names(training) %in% 'year')]
+#training <- subset(ForRF, year != '2020')
+#training <- training[ , !(names(training) %in% 'year')]
 
-validation <- subset(ForRF, year == '2020')
-validation <- validation[ , !(names(validation) %in% 'year')]
+#validation <- subset(ForRF, year == '2020')
+#validation <- validation[ , !(names(validation) %in% 'year')]
 
           ############        OR        #################
 
 # Assign the data to training and validation 2 sites training, 1 sites validation
-training <- subset(ForRF, explo != 'SCH')
-training <- training[ , !(names(training) %in% 'explo')]
+#training <- subset(ForRF, explo != 'SCH')
+#training <- training[ , !(names(training) %in% 'explo')]
 
-validation <- subset(ForRF, explo == 'SCH')
-validation <- validation[ , !(names(validation) %in% 'explo')]
+#validation <- subset(ForRF, explo == 'SCH')
+#validation <- validation[ , !(names(validation) %in% 'explo')]
 
 dim(training)
 dim(validation)
 
+# Find the best number of variables tried at each split
+mtry <- tuneRF(ForRF[-1],ForRF$biomass_g, ntreeTry=500,
+               stepFactor=1.5,improve=0.01, trace=TRUE, plot=TRUE)
+best.m <- mtry[mtry[, 2] == min(mtry[, 2]), 1]
+print(mtry)
+print(best.m)
+
 #Run RF for our response variable in our training dataset
 rf <- randomForest(
-  formula = biomass ~ .,
+  formula = biomass_g ~ .,
   data=training, 
   ntree=500,
+  mtry=best.m,
   importance=TRUE,
   na.action = na.omit
 )
