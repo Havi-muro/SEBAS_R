@@ -143,7 +143,7 @@ MyVars <- c("Year", "ep", 'explo', "x","y","number_vascular_plants","biomass_g",
             "SpecRichness", "Shannon", "Simpson", "FisherAlpha", "PielouEvenness",
             "LUI_2015_2018", "SoilTypeFusion","slope" ,"aspect", 'LAI',
             'B2','B3', 'B4', 'B5', 'B6', 'B7','B8','B8A', 'B11', 'B12',
-            'VHMax_May', 'VVMax_May','NDVI.x', 'VVStd', 'VHStd'    
+            'VHMax_May', 'VVMax_May','NDVI.y', 'VVStd', 'VHStd'    
             )
 
 BexisFV<-Bexis_S2Metrics[MyVars]
@@ -174,11 +174,13 @@ MyVars2 <- c("Year", "ep", 'explo', "x","y","number_vascular_plants","biomass_g"
             "SpecRichness", "Shannon", "Simpson", "FisherAlpha", "PielouEvenness",
             "LUI_2015_2018", "SoilTypeFusion","slope" ,"aspect", 'LAI',
             'EVI','SAVI', 'GNDVI', 'ARVI', 'CHLRE', 'MCARI','NDII','MIRNIR', 'MNDVI',
-            'VHMax_May', 'VVMax_May','NDVI.x', 'VVStd', 'VHStd'  
+            'VHMax_May', 'VVMax_May','NDVI.y', 'VVStd', 'VHStd'  
             )
 
 BexisIndices<-BexisFVnum[MyVars2]
 str(BexisIndices)
+
+write.csv(BexisIndices, file = 'BexisMaxNDVIComposite.csv')
 
 ##################  BIOMASS ########################
 
@@ -269,21 +271,24 @@ Bexis_STD2<-robStandardize(Bexis_STD)
 head(Bexis_STD2)
 
 # bind the obs info, the one hot encoded soils and the standardized numerical variables
-BexisRada <- cbind(Bexis_info, Bexis_STD2, Bexis_soils)
+BexisRada <- cbind(Bexis_info, Bexis_STD2, Bexis_hotSoil2)
 head(BexisRada)
 
 # The radar plot is built with mean data of each variable in each site and year
 # Select site and year. Radar plot is produced in excel.
 # Perhaps I have to standardize by year?
-explo1 <- 'SCH'
-Year1 <- '2020'
+explo1 <- 'ALB'
+#Year1 <- '2020'
 
-siteyear<-subset(BexisRada, explo == explo1 & Year == Year1)
+siteyear<-subset(BexisRada, explo == explo1# & Year == Year1
+                 )
 head(siteyear)
 vars_num<-siteyear[, 4:28]
 vars_mean <- colMeans(vars_num)
-#setwd('C:/Users/Janny/Desktop/SEBAS/Bexis')
-write.csv(vars_mean, file = paste(explo1, Year1, '.csv'))
+setwd('C:/Users/Janny/Desktop/SEBAS/Bexis/RadarPlot')
+write.csv(vars_mean, file = paste(explo1,'total', 
+                                  #Year1, 
+                                  '.csv'))
 
 
 #############################################################################################################
