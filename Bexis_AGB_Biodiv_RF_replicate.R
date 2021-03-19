@@ -26,6 +26,8 @@ library(randomForest)
 library(caret)
 library(data.table)
 library(matrixStats)
+library(parallel, lib.loc = "C:/Program Files/R/R-4.0.2/library")
+library(tictoc)
 require(caTools)
 library(caTools)
 
@@ -46,32 +48,31 @@ str(Bexis_clean)
 
 RFvars <- c(#"Year",
                        #"ep",
-                       "explo",
+                       #"explo",
                        #"x",
                        #"y",
-                       "biomass_g",
+                       "PielouEvenness",
                       #"LUI_2015_2018",
                       "SoilTypeFusion",
-                      "slope",
-                      #"aspect",
-                      #"LAI",
-                      #"EVI",
+                        "slope",
+                      "aspect",
+                      "LAI",
+                       "EVI",
                       "SAVI",
-                      "GNDVI",
+                       "GNDVI",
                       "ARVI",
-                      "CHLRE",
-                      #"MCARI",
+                       "CHLRE",
+                      "MCARI",
                       "NDII",
-                      "MIRNIR",
-                      "MNDVI",
-                      "VHMax_May",
+                       "MIRNIR",
+                       "MNDVI",
+                       "VHMax_May",
                       "VVMax_May",
-                      "NDVI.y"
-                      #"VVStd","VHStd"                 
+                       "NDVI.y"
+                      #"VVStd","VHStd"
 )
 
 ForRF <- Bexis_clean[RFvars]
-
 ForRF <-na.omit(ForRF)
 
 do_once <- function()
@@ -95,7 +96,7 @@ validation <- ForRF[indexes,]
 
 #Run RF for our response variable in our training dataset
 rf <- randomForest(
-  formula = biomass_g ~ .,
+  formula = PielouEvenness ~ .,
   data=training, 
   ntree=500,
 #  mtry=best.m,
@@ -103,25 +104,36 @@ rf <- randomForest(
   na.action = na.omit
 )
 #varimplot <-varImpPlot(rf, main = "Accuracy and Gini index for biomass prediction")
-#Use varImp for caret package
-#varimp <-varImp(rf)
 
 #Use the validation dataset to validate the model.
-#rf
+# rf
 pred <- predict(rf, newdata=validation)
-#plot(x= pred, y = validation$biomass, main = "Biomass Predicted vs Validated for S1 & S2")
-RMSE <- sqrt(sum((pred - validation$biomass)^2)/length(pred))
-RMSE
+#plot(x= pred, y = validation$SpecRichness, main = "Biomass Predicted vs Validated for S1 & S2")
+RMSE <- sqrt(sum((pred - validation$PielouEvenness)^2)/length(pred))
+#RMSE
 #divide it by the mean of our outcome variable so we can interpret RMSE in terms of percentage of the mean:
-RRMSE <- RMSE/mean(validation$biomass)
+RRMSE <- RMSE/mean(validation$PielouEvenness)
 RRMSE
 
 }
 #################################################################################
 # Variable importance
 # Replicate function several times
+
+# Function to do replicate several times (Use RepParallel() instead of replicate())
+RepParallel <- function(n, expr, simplify = "array",...) {
+  answer <-
+    mclapply(integer(n), eval.parent(substitute(function(...) expr)),...)
+  if (!identical(simplify, FALSE) && length(answer)) 
+    return(simplify2array(answer, higher = (simplify == "array")))
+  else return(answer)
+}
+
 # The result stored is a list with the last output paramter of the function
-varImportance <- replicate(1000, do_once())
+tic()
+varImportance <- RepParallel(1000, do_once())
+toc()
+
 
 #varImportance
 varimp_df<-as.data.frame(varImportance)
@@ -138,14 +150,16 @@ sdVarImp <- as.data.frame(rowSds(matrix))
 # bind sd and avg
 avg_SD_VarImp <- cbind(avgVarImp, sdVarImp)
 
-write.csv(avg_SD_VarImp, file = 'VariableImportancex1000_noLAI.csv')
+write.csv(avg_SD_VarImp, file = 'VariableImportancex1000_Evenness.csv')
 barplot(avgVarImp)
 
 #################################################################################
 # RRMSE
 # Replicate function several times.
 # The result stored is a list with the last output parameter of the function
-ListRMSE <- replicate(1000, do_once())
+tic()
+ListRMSE <- RepParallel(1000, do_once())
+toc()
 
 median(ListRMSE)
 sd(ListRMSE)
@@ -161,8 +175,6 @@ sd(ListRMSE)
 
 #With explo
 # 0.56 +- 0.04
-
-
 
 
 

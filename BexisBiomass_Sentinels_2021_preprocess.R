@@ -4,6 +4,9 @@
 # to predict biomass and biodiversity data
 
 # Field data from bexis Botany core team
+# S2 data is from single images taken as close as possible to biomass collection date
+# and from qualityMosaic() composites. these composites have some errors
+# but it is a much more convinient way of retrieving the spectral bands
 
 # Predictors: LUI, slope, aspect, soil type and satellite info
 # Sensors used: Sentinel-2 vegetation indices for may and Sentinel-
@@ -45,7 +48,7 @@ dir()
 
 #Open different datasets
 
-#Biomass data
+#Biomass data and S2 values from single images
 BexisRaw <- read_excel("C:/Users/Janny/Desktop/SEBAS/Bexis/Bexis_BiomDiversity_Model/AGB_PFT_Biodiv_NPK_S2S1_2017-2020_SoilTypes_4.xlsx", sheet = 'Sheet1')
 
 #cutting dates
@@ -55,6 +58,7 @@ BexisSurvey <- as.data.frame(BexisSurvey)
 str(BexisSurvey)
 str(BexisRaw)
 
+# Get the Sentinel-2 data from qualityMosaic() composites
 setwd('C:/Users/Janny/Desktop/SEBAS/Bexis/S2_metrics')
 
 #Read S2 metrics and bind them
@@ -134,19 +138,33 @@ tapply(BexisRecent$CutDOY, BexisRecent$explo, summary)
 #Biomass collection in SCH is between 19 & 25 May
 
 ##################################################################################
-#Merge bexis data with satellite info
+
+# Merge bexis data taht contains single image Sentinel-2 data with satellite info
+# from qualityMoisaic composites
 Bexis_S2Metrics <- merge(BexisRecent, S2Metrics, by=c('Year','ep'))
 str(Bexis_S2Metrics)
 variable.names(Bexis_S2Metrics)
+
+# Plot bands from mosaic and image to see dissimilarities
+# plot(Bexis_S2Metrics$S2b2, Bexis_S2Metrics$B2)
+Bexis_S2Metrics_SWSubs <- subset(Bexis_S2Metrics, SW == 2)
+plot(Bexis_S2Metrics_SWSubs$S2b8, Bexis_S2Metrics_SWSubs$B8, xlab = "S2 B8 Single image", ylab = "S2 B8 qualityMosaic()")
+plot(Bexis_S2Metrics_SWSubs$S2b12, Bexis_S2Metrics_SWSubs$B12, xlab = "S2 B12 Single image", ylab = "S2 B12 qualityMosaic()")
+
+Bexis_S2Metrics_SWSubs2 <- subset(Bexis_S2Metrics, B3 > 300 & S2b3 < 2000)
+
+
+
 #Select the Final Variables we will use
-MyVars <- c("Year", "ep", 'explo', "x","y","number_vascular_plants","biomass_g", 
+MyVars <- c("Year", "ep", 'explo', "x","y", 'SW',"number_vascular_plants","biomass_g", 
             "SpecRichness", "Shannon", "Simpson", "FisherAlpha", "PielouEvenness",
-            "LUI_2015_2018", "SoilTypeFusion","slope" ,"aspect", 'LAI',
+            "LUI_2015_2018", "SoilTypeFusion","slope" ,"aspect", 
+            'S2b2','S2b3','S2b4','S2b5','S2b6','S2b7','S2b8','S2b8a','S2b11','S2b12', 'LAI',
             'B2','B3', 'B4', 'B5', 'B6', 'B7','B8','B8A', 'B11', 'B12',
-            'VHMax_May', 'VVMax_May','NDVI.y', 'VVStd', 'VHStd'    
+            'VHMean_May', 'VVMean_May','NDVI.y'    
             )
 
-BexisFV<-Bexis_S2Metrics[MyVars]
+BexisFV<-Bexis_S2Metrics_SWSubs[MyVars]
 str(BexisFV)
 
 # NAs cause R to read some field as string. Transform to numeric
@@ -172,15 +190,17 @@ BexisFVnum$MNDVI <- cbind((BexisFVnum$B8A-BexisFVnum$B12)/(BexisFVnum$B8A+BexisF
 
 MyVars2 <- c("Year", "ep", 'explo', "x","y","number_vascular_plants","biomass_g", 
             "SpecRichness", "Shannon", "Simpson", "FisherAlpha", "PielouEvenness",
-            "LUI_2015_2018", "SoilTypeFusion","slope" ,"aspect", 'LAI',
+            "LUI_2015_2018", "SoilTypeFusion","slope" ,"aspect", 
+            'S2b2','S2b3','S2b4','S2b5','S2b6','S2b7','S2b8','S2b8a','S2b11','S2b12', 'LAI',
+            'B2','B3', 'B4', 'B5', 'B6', 'B7','B8','B8A', 'B11', 'B12',
             'EVI','SAVI', 'GNDVI', 'ARVI', 'CHLRE', 'MCARI','NDII','MIRNIR', 'MNDVI',
-            'VHMax_May', 'VVMax_May','NDVI.y', 'VVStd', 'VHStd'  
+            'VHMean_May', 'VVMean_May','NDVI.y'  
             )
 
 BexisIndices<-BexisFVnum[MyVars2]
 str(BexisIndices)
 
-write.csv(BexisIndices, file = 'BexisMaxNDVIComposite.csv')
+write.csv(BexisIndices, file = 'BexisS2Img_and_MaxNDVIComposite.csv')
 
 ##################  BIOMASS ########################
 
@@ -289,408 +309,3 @@ setwd('C:/Users/Janny/Desktop/SEBAS/Bexis/RadarPlot')
 write.csv(vars_mean, file = paste(explo1,'total', 
                                   #Year1, 
                                   '.csv'))
-
-
-#############################################################################################################
-####################################  Apply Random Forest ###################################################
-#############################################################################################################
-
-#We still have NAs in some SAR data, but we will use the na.action=na.omit from RandomForest
-
-###########################################  Biomass ########################################################
-
-#Take the response variable and the predictors
-#Choose all, or per site Bexis7Hai, Bexis7Alb, Bexis7Sch
-
-ForRF <- BexisIndices3[c("biomass_g"
-                #  ,'x'
-                #  ,'y'
-                  ,'explo'
-                  ,'Year'
-                  ,'slope'
-                #  ,'sspect'
-                  ,'SoilTypeFusion'
-                #  ,'LUIgroup'
-                  ,'NDVI.y', 'EVI','SAVI', 'GNDVI', 'ARVI', 'CHLRE', 'MCARI','NDII','MIRNIR', 'MNDVI'
-                  ,'VVStd', 'VHStd'
-                  ,'VHMax_May','VVMax_May'
-                #  ,'Phase'
-                #  ,'Amp'
-)]
-
-# Assign the data to training and validation 3 years training, 1 year validation
-training <- subset(ForRF, Year != '2020')
-training <- training[ , !(names(training) %in% 'Year')]
-
-validation <- subset(ForRF, Year == '2020')
-validation <- validation[ , !(names(validation) %in% 'Year')]
-
-          ############        OR        #################
-
-# Assign the data to training and validation 2 sites training, 1 sites validation
-training <- subset(ForRF, explo != 'HAI')
-training <- training[ , !(names(training) %in% 'explo')]
-
-validation <- subset(ForRF, explo == 'HAI')
-validation <- validation[ , !(names(validation) %in% 'explo')]
-
-           ############        OR        #################
-
-set.seed(21)
-
-# Generate a random sample of "data_set_size" indexes
-data_set_size <- floor(nrow(ForRF)/4)
-indexes <- sample(1:nrow(ForRF), size = data_set_size)
-
-# Assign the data to training and validation
-training <- ForRF[-indexes,]
-validation <- ForRF[indexes,]
-
-          ############                   #################
-
-dim(training)
-dim(validation)
-
-#Run RF for our response variable in our training dataset
-rf <- randomForest(
-  formula = biomass_g ~ .,
-  data=training, 
-  ntree=500,
-  importance=TRUE,
-  na.action = na.omit
-)
-varImpPlot(rf, main = "Accuracy and Gini index for biomass prediction" )
-
-#Use the validation dataset to validate the model.
-rf
-pred <- predict(rf, newdata=validation)
-plot(x= pred, y = validation$biomass_g, main = "Biomass Predicted vs Validated for S2")
-RMSE <- sqrt(sum((pred - validation$biomass_g)^2)/length(pred))
-RMSE
-#divide it by the mean of our outcome variable so we can interpret RMSE in terms of percentage of the mean:
-print(RMSE/mean(validation$biomass)) 
-
-#identify(x= pred, y = validation1$biomass)
-# weirdvalues<-Bexis7[c(49,  72, 114),]
-# print(weirdvalues)
-
-#ALB for validation RMSE=63, adjusted R2 = 34
-#HAI for validation RMSE= 96 , adjusted R2 = 29
-#SCH for validation RMSE = 75, adjusted R2 = 49
-
-#2020 for validation RMSE = 74, adjusted R2 = 46
-#without explo, RMSE = 74, adjusted R2 = 35, and soil type and slope get more important
-#with S1 Max and std RMSE = 68, adjusted R2 = 35. With explo, adjusted r is 45, but RMSE remains
-########################################### Spp Richness #####################################################
-
-#Take the response variable and the predictors
-ForRF <- Bexis7[c("Rich"
-                  ,'year'
-                  ,'explo'
-                  ,'Slope'
-                  ,'Aspect'
-                  ,'Soil'
-                  ,'LUIgroup'
-                  ,'LAI', 'NDVI', 'NDII'
-                  ,'VHMax','VHMin', 'VVMax','VVMin','VVMedian','VHMedian'
-                  ,'VVStd', 'VHStd'
-                  ,'VHMedian_May','VVMedian_May'
-                  ,'Phase', 'Amp'
-)]
-
-#Divide data in training (first 3 years) and calidation (last year)
-training <- subset(ForRF, year != '2020')
-training <- training[ , !(names(training) %in% 'year')]
-
-validation <- subset(ForRF, year == '2020')
-validation <- validation[ , !(names(validation) %in% 'year')]
-
-          ##############    OR    ##############
-
-# Assign the data to training and validation 2 sites training, 1 sites validation
-training <- subset(ForRF, explo != 'SCH')
-training <- training[ , !(names(training) %in% 'explo')]
-
-validation <- subset(ForRF, explo == 'SCH')
-validation <- validation[ , !(names(validation) %in% 'explo')]
-
-dim(training)
-dim(validation)
-
-#Run RF for our response variable in our training dataset
-rf <- randomForest(
-  formula = Rich ~ .,
-  data=training, 
-  ntree=500,
-  importance=TRUE,
-  na.action = na.omit
-)
-varImpPlot(rf, main = "Accuracy and Gini index for spp richness prediction")
-
-#Use the validation dataset to validate the model.
-rf
-pred <- predict(rf, newdata=validation)
-plot(pred, validation$Rich, main = "Spp richness Predicted vs Validated S1 & S2")
-RMSE <- sqrt(sum((pred - validation$Rich)^2)/length(pred))
-RMSE
-#divide it by the mean of our outcome variable so we can interpret RMSE in terms of percentage of the mean:
-print(RMSE/mean(validation$Rich)) 
-
-###########################################  Shannon  #####################################################
-#Take the response variable and the predictors
-ForRF <- Bexis7[c("Shann"
-                  ,'year'
-                  ,'explo'
-                  ,'Slope' 
-                  #,'Aspect'
-                  ,'LAI', 'NDVI'
-                  #,'VHMax','VHMin','VVMax','VVMin','VVMedian','VHMedian'
-                  ,'VVStd','VHStd' 
-                  #,'VHMedian_May','VVMedian_May'
-                  ,'Phase','Amp'
-)]
-
-#Divide data in training (first 3 years) and calidation (last year)
-training <- subset(ForRF, year != '2020')
-training <- training[ , !(names(training) %in% 'year')]
-
-
-validation <- subset(ForRF, year == '2020')
-validation <- validation[ , !(names(validation) %in% 'year')]
-
-###############    OR       ###############
-
-training <- subset(ForRF, explo == 'SCH')
-training <- training[ , !(names(training) %in% 'explo')]
-
-validation <- subset(ForRF, explo == 'HAI')
-validation <- validation[ , !(names(validation) %in% 'explo')]
-dim(training)
-dim(validation)
-
-#Run RF for our response variable in our training dataset
-rf <- randomForest(
-  formula = Shann ~ .,
-  data=training, 
-  ntree=500,
-  importance=TRUE,
-  na.action = na.omit
-)
-varImpPlot(rf, main = "Accuracy and Gini index for Shannon index prediction")
-
-#Use the validation dataset to validate the model.
-rf
-pred <- predict(rf, newdata=validation)
-plot(pred, validation$Shann, main = "Shannon Predicted vs Validated S1 & S2")
-
-RMSE <- sqrt(sum((pred - validation$Shann)^2)/length(pred))
-RMSE
-#divide it by the mean of our outcome variable so we can interpret RMSE in terms of percentage of the mean:
-print(RMSE/mean(validation$Shann)) 
-
-###########################################  Simpson  #####################################################
-
-#Take the response variable and the predictors
-ForRF <- Bexis7[c("Simps"
-                  ,'year'
-                  ,'Slope' 
-                  #,'Aspect'
-                  ,'LAI', 'NDVI', 'NDII'
-                  #,'VHMax','VHMin', 'VVMax','VVMin','VVMedian','VHMedian'
-                  ,'VVStd', 'VHStd' 
-                  #,'VHMedian_May','VVMedian_May'
-                  ,'Phase', 'Amp'
-)]
-
-#Divide data in training (first 3 years) and calidation (last year)
-training <- subset(ForRF, year != '2020')
-training <- training[ , !(names(training) %in% 'year')]
-
-validation <- subset(ForRF, year == '2020')
-validation <- validation[ , !(names(validation) %in% 'year')]
-
-###############    OR       ###############
-
-training <- subset(ForRF, explo == 'SCH')
-training <- training[ , !(names(training) %in% 'explo')]
-
-validation <- subset(ForRF, explo == 'HAI')
-validation <- validation[ , !(names(validation) %in% 'explo')]
-dim(training)
-dim(validation)
-
-#Run RF for our response variable in our training dataset
-rf <- randomForest(
-  formula = Simps ~ .,
-  data=training, 
-  ntree=500,
-  importance=TRUE,
-  na.action = na.omit
-)
-varImpPlot(rf, main = "Accuracy and Gini index for Simpsons index prediction")
-
-#Use the validation dataset to validate the model.
-rf
-pred <- predict(rf, newdata=validation)
-plot(pred, validation$Simps, main = "Simpsons Predicted vs Validated S1 & S2")
-
-RMSE <- sqrt(sum((pred - validation$Simps)^2)/length(pred))
-RMSE
-
-#divide it by the mean of our outcome variable so we can interpret RMSE in terms of percentage of the mean:
-print(RMSE/mean(validation$Shann)) 
-
-###########################################  Fisher Alpha  #####################################################
-
-#Take the response variable and the predictors
-ForRF <- Bexis7[c("alpha"
-                  ,'year'
-                  ,'explo'
-                  ,'Slope' 
-                  #,'Aspect'
-                  ,'LAI', 'NDVI', 'NDII'
-                  #,'VHMax','VHMin', 'VVMax','VVMin','VVMedian','VHMedian'
-                  ,'VVStd', 'VHStd' 
-                  #,'VHMedian_May','VVMedian_May'
-                  , 'Phase', 'Amp'
-)]
-
-#Divide data in training (first 3 years) and calidation (last year)
-training <- subset(ForRF, year != '2020')
-training <- training[ , !(names(training) %in% 'year')]
-
-validation <- subset(ForRF, year == '2020')
-validation <- validation[ , !(names(validation) %in% 'year')]
-
-dim(training)
-dim(validation)
-
-#Run RF for our response variable in our training dataset
-rf <- randomForest(
-  formula = alpha ~ .,
-  data=training, 
-  ntree=500,
-  importance=TRUE,
-  na.action = na.omit
-)
-varImpPlot(rf, main = "Accuracy and Gini index for alpha diversity")
-
-rf
-pred <- predict(rf, newdata=validation)
-plot(pred, validation$alpha, main = "Fisher's alpha Predicted vs Validated S1 & S2")
-
-RMSE <- sqrt(sum((pred - validation$alpha)^2)/length(pred))
-RMSE
-#divide it by the mean of our outcome variable so we can interpret RMSE in terms of percentage of the mean:
-print(RMSE/mean(validation$alpha)) 
-
-###########################################  Evenness  #####################################################
-
-#Take the response variable and the predictors
-ForRF <- Bexis7[c("Evenn"
-                  ,'year'
-                  ,'explo'
-                  ,'Slope' 
-                  ,'Aspect'
-                  ,"LAI", 'NDVI'
-                  ,'VHMax','VHMin', 'VVMax','VVMin','VVMedian','VHMedian'
-                  ,'VVStd', 'VHStd' 
-                  ,'VHMedian_May','VVMedian_May'
-                  ,'Phase', 'Amp'
-)]
-
-#Divide data in training (first 3 years) and calidation (last year)
-training <- subset(ForRF, year != '2020')
-training <- training[ , !(names(training) %in% 'year')]
-
-validation <- subset(ForRF, year == '2020')
-validation <- validation[ , !(names(validation) %in% 'year')]
-
-###############    OR       ###############
-
-training <- subset(ForRF, explo == 'SCH')
-training <- training[ , !(names(training) %in% 'explo')]
-
-validation <- subset(ForRF, explo == 'HAI')
-validation <- validation[ , !(names(validation) %in% 'explo')]
-
-dim(training)
-dim(validation)
-
-#Run RF for our response variable in our training dataset
-rf <- randomForest(
-  formula = Evenn ~ .,
-  data=training, 
-  ntree=500,
-  importance=TRUE,
-  na.action = na.omit
-)
-varImpPlot(rf, main = "Accuracy and Gini index for Pielu Evenness")
-
-#Use the validation dataset to validate the model.
-rf
-pred <- predict(rf, newdata=validation)
-plot(pred, validation$Evenn, main = "Shannon Predicted vs Validated S1 & S2")
-
-RMSE <- sqrt(sum((pred - validation$Evenn)^2)/length(pred))
-RMSE
-
-#divide it by the mean of our outcome variable so we can interpret RMSE in terms of percentage of the mean:
-print(RMSE/mean(validation$Evenn)) 
-
-###########################################  Vascular  #####################################################
-
-#Take the response variable and the predictors
-ForRF <- Bexis7[c("vascular"
-                  #,'year',
-                  ,'explo'
-                  ,'Slope', 'Aspect', 'Soil'
-                  ,'LAI', 'NDVI', 'NDII'
-                  #,'VHMax','VHMin', 'VVMax','VVMin','VVMedian','VHMedian',
-                  #'VVStd', 'VHStd' ,
-                  #'VHMedian_May','VVMedian_May'
-                  ,'Phase','Amp'
-)]
-
-ForRF <- subset(ForRF, vascular !='NA')
-
-#Divide data in training (first 3 years) and calidation (last year)
-training <- subset(ForRF, year != '2020')
-training <- training[ , !(names(training) %in% 'year')]
-
-
-validation <- subset(ForRF, year == '2020')
-validation <- validation[ , !(names(validation) %in% 'year')]
-
-    ###############    OR       ###############
-
-training <- subset(ForRF, explo == 'SCH')
-training <- training[ , !(names(training) %in% 'explo')]
-
-validation <- subset(ForRF, explo == 'HAI')
-validation <- validation[ , !(names(validation) %in% 'explo')]
-
-dim(training)
-dim(validation)
-
-#Run RF for our response variable in our training dataset
-rf <- randomForest(
-  formula = vascular ~ .,
-  data=training, 
-  ntree=500,
-  importance=TRUE,
-  na.action = na.omit
-)
-varImpPlot(rf, main = "Accuracy and Gini index for n vascular plants")
-
-#Use the validation dataset to validate the model.
-rf
-pred <- predict(rf, newdata=validation)
-plot(pred, validation$vascular, main = "N of vascular plants vs Validated S1 & S2")
-
-RMSE <- sqrt(sum((pred - validation$vascular)^2)/length(pred))
-RMSE
-
-#divide it by the mean of our outcome variable so we can interpret RMSE in terms of percentage of the mean:
-print(RMSE/mean(validation$vascular))
-

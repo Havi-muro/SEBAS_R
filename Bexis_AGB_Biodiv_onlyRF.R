@@ -42,7 +42,7 @@ str(Bexis_clean)
 
 ForRF <- Bexis_clean[c(#"Year",
                        #"ep",
-                       #"explo",
+                       "explo",
                        #"x",
                        #"y",
                        "biomass_g",
@@ -50,8 +50,8 @@ ForRF <- Bexis_clean[c(#"Year",
                       #"SoilTypeFusion",
                       "slope",
                       #"aspect",
-                     # "LAI",
-                      #"EVI",
+                      #"LAI",
+                      "EVI",
                       "SAVI",
                       "GNDVI",
                       "ARVI",
@@ -60,23 +60,23 @@ ForRF <- Bexis_clean[c(#"Year",
                       "NDII",
                       "MIRNIR",
                       "MNDVI",
-                     # "VHMax_May",
-                    #  "VVMax_May",
+                     "VHMax_May",
+                     # "VVMax_May",
                       "NDVI.y"
                       #"VVStd","VHStd"                 
 )]
 
 ForRF <-na.omit(ForRF)
 
-# Set random seed to make results reproducible:
-set.seed(48)
-# Calculate the size of each of the data sets:
-data_set_size <- floor(nrow(ForRF)/3)
-#Generate a random sample of "data_set_size" indexes
-indexes <- sample(1:nrow(ForRF), size = data_set_size)
-# Assign the data to training and validation
-training <- ForRF[-indexes,]
-validation <- ForRF[indexes,]
+# # Set random seed to make results reproducible:
+# set.seed(48)
+# # Calculate the size of each of the data sets:
+# data_set_size <- floor(nrow(ForRF)/3)
+# #Generate a random sample of "data_set_size" indexes
+# indexes <- sample(1:nrow(ForRF), size = data_set_size)
+# # Assign the data to training and validation
+# training <- ForRF[-indexes,]
+# validation <- ForRF[indexes,]
 
 ############        OR        #################
 
@@ -89,29 +89,29 @@ validation <- ForRF[indexes,]
 
           ############        OR        #################
 
-# Assign the data to training and validation 2 sites training, 1 sites validation
-#training <- subset(ForRF, explo != 'SCH')
-#training <- training[ , !(names(training) %in% 'explo')]
+# Assign the 2 sites for training, 1 site validation
+training <- subset(ForRF, explo != 'ALB')
+training <- training[ , !(names(training) %in% 'explo')]
 
-#validation <- subset(ForRF, explo == 'SCH')
-#validation <- validation[ , !(names(validation) %in% 'explo')]
+validation <- subset(ForRF, explo == 'ALB')
+validation <- validation[ , !(names(validation) %in% 'explo')]
 
 dim(training)
 dim(validation)
 
 # Find the best number of variables tried at each split
-mtry <- tuneRF(ForRF[-1],ForRF$biomass_g, ntreeTry=500,
-               stepFactor=1.5,improve=0.01, trace=TRUE, plot=TRUE)
-best.m <- mtry[mtry[, 2] == min(mtry[, 2]), 1]
-print(mtry)
-print(best.m)
+# mtry <- tuneRF(ForRF[-1],ForRF$biomass_g, ntreeTry=500,
+#                stepFactor=1.5,improve=0.01, trace=TRUE, plot=TRUE)
+# best.m <- mtry[mtry[, 2] == min(mtry[, 2]), 1]
+# print(mtry)
+# print(best.m)
 
 #Run RF for our response variable in our training dataset
 rf <- randomForest(
   formula = biomass_g ~ .,
   data=training, 
   ntree=500,
-  mtry=best.m,
+  # mtry=best.m,
   importance=TRUE,
   na.action = na.omit
 )
@@ -120,11 +120,11 @@ varImpPlot(rf, main = "Accuracy and Gini index for biomass prediction" )
 #Use the validation dataset to validate the model.
 rf
 pred <- predict(rf, newdata=validation)
-plot(x= pred, y = validation$biomass, main = "Biomass Predicted vs Validated for S1 & S2")
-RMSE <- sqrt(sum((pred - validation$biomass)^2)/length(pred))
+plot(x= pred, y = validation$biomass_g, main = "Biomass Predicted vs Validated for S1 & S2")
+RMSE <- sqrt(sum((pred - validation$biomass_g)^2)/length(pred))
 RMSE
 #divide it by the mean of our outcome variable so we can interpret RMSE in terms of percentage of the mean:
-print(RMSE/mean(validation$biomass)) 
+print(RMSE/mean(validation$biomass_g)) 
 
 #identify(x= pred, y = validation1$biomass)
 # weirdvalues<-Bexis7[c(49,  72, 114),]
