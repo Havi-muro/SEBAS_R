@@ -258,9 +258,10 @@ Bexis_noNAN<-na.omit(BexisIndices)
 
 # Select the variables for the radar plot
 MyVars_STD <- c("biomass_g", 'LUI_2015_2018',
-             "slope" ,"aspect",'EVI','SAVI',
-             'GNDVI', 'ARVI', 'CHLRE', 'MCARI','NDII','MIRNIR','MNDVI',
-             'VHMax_May', 'VVMax_May','NDVI.x', 'VVStd', 'VHStd'  
+             "slope" ,"aspect"
+             #'EVI','SAVI',
+             #'GNDVI', 'ARVI', 'CHLRE', 'MCARI','NDII','MIRNIR','MNDVI',
+             #'VHMax_May', 'VVMax_May','NDVI.x', 'VVStd', 'VHStd'  
 )
 
 
@@ -305,6 +306,8 @@ siteyear<-subset(BexisRada, explo == explo1# & Year == Year1
 head(siteyear)
 vars_num<-siteyear[, 4:28]
 vars_mean <- colMeans(vars_num)
+vars_stdev <- apply(BexisRada,2,sd)
+write.csv(vars_stdev, file = 'Stdev_radarPlot.csv')
 setwd('C:/Users/Janny/Desktop/SEBAS/Bexis/RadarPlot')
 write.csv(vars_mean, file = paste(explo1,'total', 
                                   #Year1, 
